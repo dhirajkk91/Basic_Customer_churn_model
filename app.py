@@ -1,25 +1,51 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import numpy as np
-from my_model_package import load_keras_model, get_tflite_path
+import logging
+from my_model_package import load_keras_model
 
 app = FastAPI()
+logger = logging.getLogger("uvicorn.error")
+
 
 class PredictRequest(BaseModel):
     features: list
 
-# Load model once at startup
-model = load_keras_model()
+
+@app.on_event("startup")
+def startup_event():
+    try:
+        app.state.model = load_keras_model()
+        logger.info("Model loaded successfully")
+    except Exception as e:
+        logger.exception("Failed to load model at startup: %s", e)
+        app.state.model = None
+
 
 @app.get('/health')
 def health():
-    return {'status': 'ok'}
+    ready = app.state.model is not None
+    return {'status': 'ok', 'ready': ready}
+
 
 @app.post('/predict')
 def predict(req: PredictRequest):
-    x = np.array(req.features)
+    if app.state.model is None:
+        raise HTTPException(status_code=503, detail="Model not loaded")
+
+    try:
+        x = np.array(req.features, dtype=float)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid features: must be a numeric list")
+
     if x.ndim == 1:
         x = x.reshape(1, -1)
-    pred = model.predict(x)
-    prob = float(pred.squeeze())
+
+    try:
+        pred = app.state.model.predict(x)
+        prob = float(pred.squeeze())
+    except Exception as e:
+        logger.exception("Prediction failed: %s", e)
+        raise HTTPException(status_code=500, detail="Prediction failed")
+
     return {'probability': prob}
