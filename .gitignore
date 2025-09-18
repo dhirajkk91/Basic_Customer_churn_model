@@ -11,10 +11,7 @@ venv/
 env/
 
 # Data and model artifacts
-*.h5
-*.tflite
-saved_model_churn/
-saved_model_churn_from_h5/
+# (churn models are intentionally tracked in this repo)
 
 # OS files
 Thumbs.db
