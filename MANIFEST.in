@@ -1,0 +1,2 @@
+include my_model_package/churn_model.h5
+include my_model_package/model_churn.tflite
