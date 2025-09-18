@@ -7,7 +7,7 @@ Included artifacts
 - `Customer_churn_prediction.ipynb` — training and conversion notebook
 - `churn_model.h5` — Keras HDF5 model exported from the notebook
 - `model_churn.tflite` — TFLite model converted from the SavedModel/HDF5
-- `saved_model_churn/` — SavedModel directory (large; not committed by default)
+- `saved_model_churn/` — SavedModel directory 
 
 Quick use
 
