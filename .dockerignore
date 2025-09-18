@@ -13,5 +13,5 @@ env/
 *.log
 .DS_Store
 
-# Ignore model artifacts if you prefer not to include them in the image
+
 
